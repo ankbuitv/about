@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ankbui-bio",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-13",
+  "workers_dev": true
+}
