@@ -28,7 +28,8 @@ export interface GithubStats {
   fetchedAt: string;
 }
 
-const CACHE_SECONDS = 300;
+const CACHE_SECONDS = 3600;
+const STALE_SECONDS = 604800; // serve last good payload up to 7 days when the API is down
 
 interface GhUser {
   public_repos: number;
@@ -128,25 +129,53 @@ export async function githubStatsResponse(
   ctx: ExecutionContext,
 ): Promise<Response> {
   const cache = caches.default;
-  const cacheKey = new Request(
+  const freshKey = new Request(
     new URL("/api/github", request.url).toString(),
     { method: "GET" },
   );
+  const staleKey = new Request(
+    new URL("/api/github-last-good", request.url).toString(),
+    { method: "GET" },
+  );
 
-  const cached = await cache.match(cacheKey);
+  const cached = await cache.match(freshKey);
   if (cached) return cached;
 
   try {
     const stats = await buildStats(env);
-    const response = new Response(JSON.stringify(stats), {
+    const body = JSON.stringify(stats);
+    const response = new Response(body, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": `public, max-age=60, s-maxage=${CACHE_SECONDS}`,
       },
     });
-    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    const staleCopy = new Response(body, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": `public, s-maxage=${STALE_SECONDS}`,
+      },
+    });
+    ctx.waitUntil(
+      Promise.all([
+        cache.put(freshKey, response.clone()),
+        cache.put(staleKey, staleCopy),
+      ]),
+    );
     return response;
   } catch {
+    // API failed (rate limit, outage) — serve the last good payload if we have one.
+    const stale = await cache.match(staleKey);
+    if (stale) {
+      const body = await stale.text();
+      return new Response(body, {
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "public, max-age=60",
+          "X-Stats-Stale": "1",
+        },
+      });
+    }
     return new Response(JSON.stringify({ ok: false }), {
       status: 200,
       headers: {

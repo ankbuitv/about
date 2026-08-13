@@ -7,6 +7,30 @@ export const CLIENT_JS = `
   var CFG = window.__OS__;
   var isMobile = function () { return window.matchMedia('(max-width: 720px)').matches; };
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var MB_H = 34;
+
+  /* ---------- svg icon set (static strings only) ---------- */
+  function svgWrap(inner) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+  var ICONS = {
+    about: svgWrap('<circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 19.4c.9-3.4 3.6-5.2 6.8-5.2s5.9 1.8 6.8 5.2"/>'),
+    projects: svgWrap('<path d="M3.6 7.6a2 2 0 0 1 2-2h3.1l2 2.2h7.7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2z"/>'),
+    github: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .8C5.7.8.7 5.8.7 12.1c0 5 3.2 9.2 7.7 10.7.6.1.8-.2.8-.5v-2c-3.1.7-3.8-1.3-3.8-1.3-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.4-2.3 1.2-3.1-.1-.3-.5-1.5.1-3 0 0 1-.3 3.1 1.2a10.7 10.7 0 0 1 5.6 0c2.2-1.5 3.1-1.2 3.1-1.2.6 1.5.2 2.7.1 3 .8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.5 4.5-1.5 7.7-5.7 7.7-10.7C23.3 5.8 18.3.8 12 .8z"/></svg>',
+    terminal: svgWrap('<rect x="3" y="4.6" width="18" height="14.8" rx="2.4"/><path d="m7 9.6 3 2.9-3 2.9"/><path d="M12.6 15.4H17"/>'),
+    contact: svgWrap('<rect x="3" y="5.4" width="18" height="13.2" rx="2.4"/><path d="m4.4 7.6 7.6 5.6 7.6-5.6"/>'),
+    settings: svgWrap('<path d="M4 7.3h8.6M17 7.3h3M4 12h3M11.4 12H20M4 16.7h8.6M17 16.7h3"/><circle cx="15" cy="7.3" r="1.9"/><circle cx="9.2" cy="12" r="1.9"/><circle cx="15" cy="16.7" r="1.9"/>'),
+    refresh: svgWrap('<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 3.8v4.4h-4.4"/>'),
+    wallpaper: svgWrap('<rect x="3" y="4.6" width="18" height="14.8" rx="2.4"/><circle cx="9" cy="10" r="1.6"/><path d="m4.5 17.5 4.6-4.3 3.2 3 2.9-2.6 4.3 3.9"/>'),
+    link: svgWrap('<path d="M10.2 13.8a4 4 0 0 0 5.6 0l3-3a4 4 0 1 0-5.6-5.6l-1.3 1.3"/><path d="M13.8 10.2a4 4 0 0 0-5.6 0l-3 3a4 4 0 1 0 5.6 5.6l1.3-1.3"/>'),
+    offline: svgWrap('<path d="M2.8 9.5a14.5 14.5 0 0 1 18.4 0M5.8 12.8a10 10 0 0 1 12.4 0M8.8 16.1a5.2 5.2 0 0 1 6.4 0"/><circle cx="12" cy="19.2" r="1.2" fill="currentColor" stroke="none"/><path d="M4 4l16 16"/>')
+  };
+  function tileEl(appId, cls) {
+    var t = document.createElement('span');
+    t.className = 'tile tile-' + appId + (cls ? ' ' + cls : '');
+    t.innerHTML = ICONS[appId];
+    return t;
+  }
 
   /* ---------- tiny DOM helpers ---------- */
   function el(tag, cls, text) {
@@ -43,17 +67,20 @@ export const CLIENT_JS = `
 
   /* ---------- preferences ---------- */
   var PREF_KEY = 'ankbui-os-prefs';
-  var prefs = { spotlight: true, reduceMotion: false, clock24: true };
+  var WALLPAPERS = ['aurora', 'graphite', 'nebula', 'ocean'];
+  var prefs = { spotlight: true, reduceMotion: false, clock24: true, wp: 'aurora' };
   try {
     var saved = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
-    for (var k in saved) if (k in prefs) prefs[k] = !!saved[k];
+    for (var k in saved) if (k in prefs) prefs[k] = saved[k];
+    if (WALLPAPERS.indexOf(prefs.wp) === -1) prefs.wp = 'aurora';
   } catch (e) { /* ignore */ }
   function savePrefs() {
     try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) { /* ignore */ }
   }
   function applyPrefs() {
     document.body.classList.toggle('no-spotlight', !prefs.spotlight);
-    document.body.classList.toggle('reduce-motion', prefs.reduceMotion);
+    document.body.classList.toggle('reduce-motion', !!prefs.reduceMotion);
+    document.body.setAttribute('data-wp', prefs.wp);
     renderClock();
   }
 
@@ -81,24 +108,93 @@ export const CLIENT_JS = `
     }, { passive: true });
   })();
 
-  /* ---------- GitHub data ---------- */
+  /* ---------- GitHub data (worker -> browser fallback) ---------- */
   var ghData = null;
   var ghFailed = false;
+  var ghLoading = false;
   var ghWaiters = [];
-  fetch('/api/github')
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (d && d.ok) { ghData = d; } else { ghFailed = true; }
-    })
-    .catch(function () { ghFailed = true; })
-    .then(function () {
-      var dot = document.getElementById('sysdot');
-      if (dot && ghFailed) { dot.classList.add('err'); dot.title = 'GitHub sync unavailable'; }
-      var w = ghWaiters.slice(); ghWaiters = [];
-      w.forEach(function (fn) { fn(); });
-    });
+
   function whenGh(fn) {
     if (ghData || ghFailed) fn(); else ghWaiters.push(fn);
+  }
+  function ghSettled() {
+    var dot = document.getElementById('sysdot');
+    if (dot) {
+      dot.classList.toggle('err', !!ghFailed);
+      dot.title = ghFailed ? 'GitHub sync unavailable' : 'System online';
+    }
+    var w = ghWaiters.slice(); ghWaiters = [];
+    w.forEach(function (fn) { fn(); });
+  }
+  function browserGh() {
+    // Same-shape stats computed directly in the visitor's browser.
+    // Each visitor has their own GitHub rate limit, so this almost always works.
+    var base = 'https://api.github.com/users/' + CFG.github;
+    return Promise.all([
+      fetch(base).then(function (r) { if (!r.ok) throw new Error('gh'); return r.json(); }),
+      fetch(base + '/repos?per_page=100&sort=pushed').then(function (r) { return r.ok ? r.json() : []; })
+    ]).then(function (res) {
+      var u = res[0], repos = res[1] || [];
+      var stars = 0, forks = 0, langMap = {};
+      repos.forEach(function (r) {
+        stars += r.stargazers_count || 0;
+        forks += r.forks_count || 0;
+        if (r.language && !r.fork) langMap[r.language] = (langMap[r.language] || 0) + 1;
+      });
+      var languages = Object.keys(langMap).map(function (n) {
+        return { name: n, count: langMap[n] };
+      }).sort(function (a, b) { return b.count - a.count; }).slice(0, 6);
+      ghData = {
+        ok: true,
+        user: {
+          repos: u.public_repos, followers: u.followers,
+          following: u.following, gists: u.public_gists, createdAt: u.created_at
+        },
+        stars: stars,
+        forks: forks,
+        languages: languages,
+        recent: repos.slice(0, 5).map(function (r) {
+          return {
+            name: r.name, url: r.html_url, description: r.description || '',
+            stars: r.stargazers_count || 0, language: r.language || '', pushedAt: r.pushed_at
+          };
+        }),
+        recentEvents: 0,
+        fetchedAt: new Date().toISOString()
+      };
+    });
+  }
+  function loadGh() {
+    if (ghLoading) return;
+    ghLoading = true;
+    ghData = null;
+    ghFailed = false;
+    fetch('/api/github')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ok) { ghData = d; return null; }
+        return browserGh();
+      })
+      .catch(function () { return browserGh(); })
+      .catch(function () { ghFailed = true; })
+      .then(function () {
+        ghLoading = false;
+        if (!ghData) ghFailed = true;
+        ghSettled();
+      });
+  }
+  loadGh();
+
+  function refreshGh() {
+    loadGh();
+    whenGh(function () {
+      var w = wins.github;
+      if (w) {
+        var body = w.el.querySelector('.wbody');
+        body.textContent = '';
+        renderGithub(body);
+      }
+    });
   }
 
   function countUp(node, target) {
@@ -157,33 +253,49 @@ export const CLIENT_JS = `
     body.appendChild(pad);
   }
 
+  function projectLogo(p, index) {
+    var logo = el('div', 'proj-logo');
+    var host = '';
+    try { host = new URL(p.site).hostname; } catch (e) { /* ignore */ }
+    var candidates = [];
+    if (p.logo) candidates.push(p.logo);
+    if (host) {
+      candidates.push('https://icons.duckduckgo.com/ip3/' + host + '.ico');
+      candidates.push('https://www.google.com/s2/favicons?domain=' + encodeURIComponent(host) + '&sz=128');
+      candidates.push(p.site.replace(/\\/+$/, '') + '/favicon.ico');
+    }
+    // de-dup
+    candidates = candidates.filter(function (c, i) { return candidates.indexOf(c) === i; });
+
+    var img = el('img');
+    img.alt = p.name + ' logo';
+    img.loading = 'lazy';
+    var idx = 0;
+    function letterTile() {
+      logo.textContent = '';
+      logo.className = 'proj-logo lt lt-' + (index % 3);
+      logo.appendChild(document.createTextNode(p.name.charAt(0).toUpperCase()));
+    }
+    img.onerror = function () {
+      idx++;
+      if (idx < candidates.length) img.src = candidates[idx];
+      else letterTile();
+    };
+    img.onload = function () {
+      // A 0-sized or 1px tracking pixel is as bad as a broken icon.
+      if (img.naturalWidth < 8) img.onerror();
+    };
+    if (candidates.length) img.src = candidates[0]; else letterTile();
+    logo.appendChild(img);
+    return logo;
+  }
+
   function renderProjects(body) {
     var pad = el('div', 'pad');
     var grid = el('div', 'proj-grid');
-    CFG.projects.forEach(function (p) {
+    CFG.projects.forEach(function (p, i) {
       var card = el('div', 'proj-card');
-      var logo = el('div', 'proj-logo');
-      var img = el('img');
-      img.alt = p.name + ' logo';
-      img.loading = 'lazy';
-      img.src = p.logo;
-      img.onerror = function () {
-        img.onerror = null;
-        var alt = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(new URL(p.site).hostname) + '&sz=128';
-        if (img.src !== alt) {
-          img.onerror = function () {
-            logo.textContent = '';
-            logo.appendChild(el('span', 'fallback', p.name.charAt(0)));
-          };
-          img.src = alt;
-        } else {
-          logo.textContent = '';
-          logo.appendChild(el('span', 'fallback', p.name.charAt(0)));
-        }
-      };
-      logo.appendChild(img);
-      card.appendChild(logo);
-
+      card.appendChild(projectLogo(p, i));
       var right = el('div');
       right.appendChild(el('div', 'proj-name', p.name));
       right.appendChild(el('div', 'proj-desc', p.description));
@@ -225,11 +337,19 @@ export const CLIENT_JS = `
       content.textContent = '';
       if (!ghData) {
         var fb = el('div', 'gh-fallback');
-        fb.appendChild(el('div', 'big', '\\uD83D\\uDEF0'));
+        var big = el('div', 'big');
+        big.innerHTML = ICONS.offline;
+        fb.appendChild(big);
         fb.appendChild(el('div', null, 'GitHub stats are offline right now.'));
         var sub = el('div', 'faint', 'The profile is still one click away.');
         sub.style.marginTop = '4px';
         fb.appendChild(sub);
+        var retryRow = el('div');
+        retryRow.style.marginTop = '16px';
+        var retry = el('button', 'btn', 'Retry');
+        retry.addEventListener('click', refreshGh);
+        retryRow.appendChild(retry);
+        fb.appendChild(retryRow);
         content.appendChild(fb);
         return;
       }
@@ -314,10 +434,35 @@ export const CLIENT_JS = `
 
   function renderSettings(body) {
     var pad = el('div', 'pad');
+
+    var wpRow = el('div', 'set-row');
+    var wpInfo = el('div', 'set-info');
+    wpInfo.appendChild(el('div', 'set-name', 'Wallpaper'));
+    wpInfo.appendChild(el('div', 'set-desc', 'Ambient tone of the desktop'));
+    wpRow.appendChild(wpInfo);
+    var swRow = el('div', 'wp-row');
+    WALLPAPERS.forEach(function (wp) {
+      var s = el('button', 'swatch' + (prefs.wp === wp ? ' on' : ''));
+      s.setAttribute('data-wp', wp);
+      s.setAttribute('aria-label', 'Wallpaper ' + wp);
+      s.title = wp.charAt(0).toUpperCase() + wp.slice(1);
+      s.addEventListener('click', function () {
+        prefs.wp = wp;
+        savePrefs();
+        applyPrefs();
+        swRow.querySelectorAll('.swatch').forEach(function (x) {
+          x.classList.toggle('on', x.getAttribute('data-wp') === wp);
+        });
+      });
+      swRow.appendChild(s);
+    });
+    wpRow.appendChild(swRow);
+    pad.appendChild(wpRow);
+
     var rows = [
       ['spotlight', 'Cursor spotlight', 'Ambient light that follows the cursor'],
       ['reduceMotion', 'Reduce motion', 'Minimize animations across the OS'],
-      ['clock24', '24-hour clock', 'Show taskbar time as HH:MM']
+      ['clock24', '24-hour clock', 'Show menu bar time as HH:MM']
     ];
     rows.forEach(function (r) {
       var row = el('div', 'set-row');
@@ -331,7 +476,7 @@ export const CLIENT_JS = `
       t.setAttribute('aria-label', r[1]);
       t.addEventListener('click', function () {
         prefs[r[0]] = !prefs[r[0]];
-        t.classList.toggle('on', prefs[r[0]]);
+        t.classList.toggle('on', !!prefs[r[0]]);
         t.setAttribute('aria-checked', String(!!prefs[r[0]]));
         savePrefs();
         applyPrefs();
@@ -550,12 +695,12 @@ export const CLIENT_JS = `
 
   /* ---------- window manager ---------- */
   var APPS = {
-    about:    { icon: '\\uD83D\\uDC64', title: 'About \\u2014 ' + CFG.os, label: 'About',    w: 470, h: 520, render: renderAbout },
-    projects: { icon: '\\uD83D\\uDCC1', title: 'Projects',                 label: 'Projects', w: 560, h: 560, render: renderProjects },
-    github:   { icon: '\\uD83D\\uDCCA', title: 'GitHub',                   label: 'GitHub',   w: 620, h: 620, render: renderGithub },
-    terminal: { icon: '\\uD83D\\uDCBB', title: CFG.username + '@os: ~',    label: 'Terminal', w: 640, h: 440, render: renderTerminal },
-    contact:  { icon: '\\u2709\\uFE0F', title: 'Contact',                  label: 'Contact',  w: 420, h: 430, render: renderContact },
-    settings: { icon: '\\u2699\\uFE0F', title: 'Settings',                 label: 'Settings', w: 460, h: 400, render: renderSettings }
+    about:    { title: 'About \\u2014 ' + CFG.os, label: 'About',    color: '#6aa6ff', w: 470, h: 520, render: renderAbout },
+    projects: { title: 'Projects',                 label: 'Projects', color: '#f6b35c', w: 560, h: 560, render: renderProjects },
+    github:   { title: 'GitHub',                   label: 'GitHub',   color: '#c9d3e3', w: 620, h: 620, render: renderGithub },
+    terminal: { title: CFG.username + '@os: ~',    label: 'Terminal', color: '#7ee39c', w: 640, h: 440, render: renderTerminal },
+    contact:  { title: 'Contact',                  label: 'Contact',  color: '#5ad3c3', w: 420, h: 440, render: renderContact },
+    settings: { title: 'Settings',                 label: 'Settings', color: '#aab4c5', w: 470, h: 470, render: renderSettings }
   };
   var DOCK_ORDER = ['about', 'projects', 'github', 'terminal', 'contact'];
   var ICON_ORDER = ['about', 'projects', 'github', 'terminal', 'contact', 'settings'];
@@ -564,6 +709,12 @@ export const CLIENT_JS = `
   var zTop = 20;
   var openCount = 0;
   var desktop = document.getElementById('desktop');
+  var mbApp = document.getElementById('mb-app');
+  var snapGhost = document.getElementById('snapghost');
+
+  function setMbApp(label) {
+    if (mbApp) mbApp.textContent = label || 'Desktop';
+  }
 
   function focusWin(id) {
     for (var wid in wins) wins[wid].el.classList.remove('focused');
@@ -572,6 +723,17 @@ export const CLIENT_JS = `
     w.el.classList.add('focused');
     zTop += 1;
     w.el.style.zIndex = String(zTop);
+    setMbApp(APPS[id].label);
+  }
+
+  function focusTopWindow() {
+    var bestId = null, bestZ = -1;
+    for (var wid in wins) {
+      if (wins[wid].min) continue;
+      var z = parseInt(wins[wid].el.style.zIndex || '0', 10);
+      if (z > bestZ) { bestZ = z; bestId = wid; }
+    }
+    if (bestId) focusWin(bestId); else setMbApp('Desktop');
   }
 
   function updateDock() {
@@ -586,12 +748,13 @@ export const CLIENT_JS = `
     if (!w) return;
     delete wins[id];
     updateDock();
-    if (motionOff()) {
+    var done = function () {
       if (w.el.parentNode) w.el.parentNode.removeChild(w.el);
-      return;
-    }
+      focusTopWindow();
+    };
+    if (motionOff()) { done(); return; }
     w.el.classList.add('closing');
-    setTimeout(function () { if (w.el.parentNode) w.el.parentNode.removeChild(w.el); }, 220);
+    setTimeout(done, 220);
   }
 
   function minimizeWin(id) {
@@ -600,12 +763,14 @@ export const CLIENT_JS = `
     w.min = true;
     if (motionOff()) {
       w.el.style.display = 'none';
+      focusTopWindow();
       return;
     }
     w.el.classList.add('minimizing');
     setTimeout(function () {
       if (w.min) w.el.style.display = 'none';
       w.el.classList.remove('minimizing');
+      focusTopWindow();
     }, 300);
   }
 
@@ -629,6 +794,76 @@ export const CLIENT_JS = `
     w.el.classList.toggle('maxed');
   }
 
+  function applySnap(win, zone) {
+    win.classList.remove('maxed');
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var top = MB_H + 8;
+    var height = vh - MB_H - 108;
+    if (zone === 'left') {
+      win.style.left = '10px';
+      win.style.top = top + 'px';
+      win.style.width = Math.round(vw / 2 - 15) + 'px';
+      win.style.height = height + 'px';
+    } else if (zone === 'right') {
+      win.style.left = Math.round(vw / 2 + 5) + 'px';
+      win.style.top = top + 'px';
+      win.style.width = Math.round(vw / 2 - 15) + 'px';
+      win.style.height = height + 'px';
+    } else if (zone === 'top') {
+      win.classList.add('maxed');
+    }
+  }
+  function ghostRect(zone) {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var top = MB_H + 8;
+    var height = vh - MB_H - 108;
+    if (zone === 'left') return { l: 10, t: top, w: Math.round(vw / 2 - 15), h: height };
+    if (zone === 'right') return { l: Math.round(vw / 2 + 5), t: top, w: Math.round(vw / 2 - 15), h: height };
+    return { l: 10, t: top, w: vw - 20, h: height };
+  }
+  function showGhost(zone) {
+    var r = ghostRect(zone);
+    snapGhost.style.left = r.l + 'px';
+    snapGhost.style.top = r.t + 'px';
+    snapGhost.style.width = r.w + 'px';
+    snapGhost.style.height = r.h + 'px';
+    snapGhost.classList.add('show');
+  }
+  function hideGhost() { snapGhost.classList.remove('show'); }
+
+  function attachResize(win) {
+    ['r', 'b', 'br'].forEach(function (dir) {
+      var h = el('div', 'rz rz-' + dir);
+      win.appendChild(h);
+      h.addEventListener('pointerdown', function (ev) {
+        if (isMobile()) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        var rect = win.getBoundingClientRect();
+        var sx = ev.clientX, sy = ev.clientY;
+        h.setPointerCapture(ev.pointerId);
+        function onMove(e) {
+          if (dir === 'r' || dir === 'br') {
+            var nw = Math.max(300, Math.min(rect.width + (e.clientX - sx), window.innerWidth - rect.left - 8));
+            win.style.width = nw + 'px';
+          }
+          if (dir === 'b' || dir === 'br') {
+            var nh = Math.max(220, Math.min(rect.height + (e.clientY - sy), window.innerHeight - rect.top - 8));
+            win.style.height = nh + 'px';
+          }
+        }
+        function onUp() {
+          h.removeEventListener('pointermove', onMove);
+          h.removeEventListener('pointerup', onUp);
+          h.removeEventListener('pointercancel', onUp);
+        }
+        h.addEventListener('pointermove', onMove);
+        h.addEventListener('pointerup', onUp);
+        h.addEventListener('pointercancel', onUp);
+      });
+    });
+  }
+
   function openApp(id) {
     if (wins[id]) { restoreWin(id); return; }
     var app = APPS[id];
@@ -640,7 +875,10 @@ export const CLIENT_JS = `
     win.setAttribute('aria-label', app.label);
 
     var bar = el('div', 'titlebar');
-    bar.appendChild(el('span', 't-ico', app.icon));
+    var tico = el('span', 't-ico');
+    tico.innerHTML = ICONS[id];
+    tico.style.color = app.color;
+    bar.appendChild(tico);
     bar.appendChild(el('span', 't-title', app.title));
     var btns = el('div', 'wbtns');
     var bMin = el('button', 'wbtn min', '\\u2013');
@@ -662,12 +900,13 @@ export const CLIENT_JS = `
     var vw = window.innerWidth, vh = window.innerHeight;
     if (!isMobile()) {
       var ww = Math.min(app.w, vw - 40);
-      var wh = Math.min(app.h, vh - 110);
+      var wh = Math.min(app.h, vh - 130);
       win.style.width = ww + 'px';
       win.style.height = wh + 'px';
       var offset = (openCount % 6) * 26;
       win.style.left = Math.max(12, Math.round((vw - ww) / 2 - 60 + offset)) + 'px';
-      win.style.top = Math.max(12, Math.round((vh - wh) / 2 - 50 + offset)) + 'px';
+      win.style.top = Math.max(MB_H + 10, Math.round((vh - wh) / 2 - 50 + offset)) + 'px';
+      attachResize(win);
     }
     openCount++;
 
@@ -691,27 +930,46 @@ export const CLIENT_JS = `
       if (!isMobile()) toggleMax(id);
     });
 
-    // drag
+    // drag + edge snapping
     bar.addEventListener('pointerdown', function (ev) {
       if (ev.target.closest('.wbtn')) return;
-      if (isMobile() || win.classList.contains('maxed')) return;
+      if (isMobile()) return;
       var startX = ev.clientX, startY = ev.clientY;
+      var wasMaxed = win.classList.contains('maxed');
       var rect = win.getBoundingClientRect();
       var moved = false;
+      var zone = null;
       bar.setPointerCapture(ev.pointerId);
       function onMove(e) {
         var dx = e.clientX - startX, dy = e.clientY - startY;
         if (!moved && Math.abs(dx) + Math.abs(dy) < 3) return;
+        if (!moved && wasMaxed) {
+          // un-maximize under the cursor
+          win.classList.remove('maxed');
+          win.style.width = Math.min(APPS[id].w, window.innerWidth - 40) + 'px';
+          win.style.height = Math.min(APPS[id].h, window.innerHeight - 130) + 'px';
+          rect = { left: e.clientX - parseInt(win.style.width, 10) / 2, top: e.clientY - 20, width: parseInt(win.style.width, 10), height: parseInt(win.style.height, 10) };
+          startX = e.clientX; startY = e.clientY;
+          dx = 0; dy = 0;
+        }
         moved = true;
         var nx = Math.min(Math.max(rect.left + dx, -rect.width + 90), window.innerWidth - 90);
-        var ny = Math.min(Math.max(rect.top + dy, 0), window.innerHeight - 60);
+        var ny = Math.min(Math.max(rect.top + dy, MB_H), window.innerHeight - 60);
         win.style.left = nx + 'px';
         win.style.top = ny + 'px';
+
+        zone = null;
+        if (e.clientX <= 14) zone = 'left';
+        else if (e.clientX >= window.innerWidth - 14) zone = 'right';
+        else if (e.clientY <= MB_H + 6) zone = 'top';
+        if (zone) showGhost(zone); else hideGhost();
       }
       function onUp() {
         bar.removeEventListener('pointermove', onMove);
         bar.removeEventListener('pointerup', onUp);
         bar.removeEventListener('pointercancel', onUp);
+        hideGhost();
+        if (moved && zone) applySnap(win, zone);
       }
       bar.addEventListener('pointermove', onMove);
       bar.addEventListener('pointerup', onUp);
@@ -726,44 +984,32 @@ export const CLIENT_JS = `
       var app = APPS[id];
       var b = el('button', 'dicon');
       b.setAttribute('data-app', id);
-      b.appendChild(el('span', 'glyph', app.icon));
+      b.appendChild(tileEl(id));
       b.appendChild(el('span', 'label', app.label));
       b.addEventListener('click', function () { openApp(id); });
       icons.appendChild(b);
     });
 
     var dock = document.getElementById('dock');
-    var tray = document.getElementById('tray');
-    DOCK_ORDER.forEach(function (id) {
+    var sep = dock.querySelector('.dock-sep');
+    function dockBtn(id) {
       var app = APPS[id];
       var b = el('button', 'dock-app');
       b.setAttribute('data-app', id);
-      b.title = app.label;
       b.setAttribute('aria-label', app.label);
-      b.appendChild(document.createTextNode(app.icon));
+      b.appendChild(tileEl(id));
       b.appendChild(el('span', 'dot'));
+      b.appendChild(el('span', 'tip', app.label));
       b.addEventListener('click', function () {
         var w = wins[id];
         if (!w) openApp(id);
         else if (w.min) restoreWin(id);
         else focusWin(id);
       });
-      dock.insertBefore(b, dock.querySelector('.dock-sep'));
-    });
-
-    var sb = el('button', 'dock-app');
-    sb.setAttribute('data-app', 'settings');
-    sb.title = 'Settings';
-    sb.setAttribute('aria-label', 'Settings');
-    sb.appendChild(document.createTextNode(APPS.settings.icon));
-    sb.appendChild(el('span', 'dot'));
-    sb.addEventListener('click', function () {
-      var w = wins.settings;
-      if (!w) openApp('settings');
-      else if (w.min) restoreWin('settings');
-      else focusWin('settings');
-    });
-    tray.insertBefore(sb, tray.firstChild);
+      return b;
+    }
+    DOCK_ORDER.forEach(function (id) { dock.insertBefore(dockBtn(id), sep); });
+    dock.appendChild(dockBtn('settings'));
   })();
 
   /* ---------- clock ---------- */
@@ -798,6 +1044,46 @@ export const CLIENT_JS = `
     if (!datepop.contains(ev.target) && ev.target !== clockBtn) datepop.classList.remove('show');
   });
 
+  /* ---------- context menu ---------- */
+  var ctx = document.getElementById('ctx');
+  function ctxItem(iconKey, label, act) {
+    var b = el('button', 'ctx-item');
+    var ic = el('span');
+    ic.innerHTML = ICONS[iconKey];
+    b.appendChild(ic);
+    b.appendChild(el('span', null, label));
+    b.addEventListener('click', function () { hideCtx(); act(); });
+    return b;
+  }
+  function buildCtx() {
+    ctx.textContent = '';
+    ctx.appendChild(ctxItem('terminal', 'New Terminal', function () { openApp('terminal'); }));
+    ctx.appendChild(ctxItem('refresh', 'Refresh GitHub stats', refreshGh));
+    ctx.appendChild(el('div', 'ctx-sep'));
+    ctx.appendChild(ctxItem('wallpaper', 'Next wallpaper', function () {
+      var i = WALLPAPERS.indexOf(prefs.wp);
+      prefs.wp = WALLPAPERS[(i + 1) % WALLPAPERS.length];
+      savePrefs();
+      applyPrefs();
+    }));
+    ctx.appendChild(ctxItem('settings', 'Settings', function () { openApp('settings'); }));
+    ctx.appendChild(el('div', 'ctx-sep'));
+    ctx.appendChild(ctxItem('about', 'About ' + CFG.os, function () { openApp('about'); }));
+  }
+  function hideCtx() { ctx.classList.remove('show'); }
+  desktop.addEventListener('contextmenu', function (ev) {
+    if (ev.target.closest('.window')) return; // native menu inside windows
+    ev.preventDefault();
+    buildCtx();
+    ctx.classList.add('show');
+    var w = ctx.offsetWidth, h = ctx.offsetHeight;
+    ctx.style.left = Math.min(ev.clientX, window.innerWidth - w - 8) + 'px';
+    ctx.style.top = Math.min(ev.clientY, window.innerHeight - h - 8) + 'px';
+  });
+  document.addEventListener('pointerdown', function (ev) {
+    if (!ctx.contains(ev.target)) hideCtx();
+  });
+
   /* ---------- command palette ---------- */
   var palette = document.getElementById('palette');
   var palInput = document.getElementById('pal-input');
@@ -806,14 +1092,21 @@ export const CLIENT_JS = `
   var palSel = 0;
 
   var PAL_SOURCE = ICON_ORDER.map(function (id) {
-    return { icon: APPS[id].icon, label: APPS[id].label, hint: 'App', act: function () { openApp(id); } };
+    return { app: id, label: APPS[id].label, hint: 'App', act: function () { openApp(id); } };
   }).concat([
-    { icon: '\\uD83D\\uDD17', label: 'Open GitHub profile', hint: 'Link', act: function () {
+    { plain: 'link', label: 'Open GitHub profile', hint: 'Link', act: function () {
         window.open('https://github.com/' + CFG.github, '_blank', 'noopener,noreferrer');
       } },
-    { icon: '\\u2709\\uFE0F', label: 'Send email', hint: 'Link', act: function () {
+    { plain: 'contact', label: 'Send email', hint: 'Link', act: function () {
         window.location.href = 'mailto:' + CFG.email;
-      } }
+      } },
+    { plain: 'wallpaper', label: 'Next wallpaper', hint: 'Action', act: function () {
+        var i = WALLPAPERS.indexOf(prefs.wp);
+        prefs.wp = WALLPAPERS[(i + 1) % WALLPAPERS.length];
+        savePrefs();
+        applyPrefs();
+      } },
+    { plain: 'refresh', label: 'Refresh GitHub stats', hint: 'Action', act: refreshGh }
   ]);
 
   function palRender() {
@@ -829,7 +1122,13 @@ export const CLIENT_JS = `
     }
     palItems.forEach(function (it, i) {
       var b = el('button', 'pal-item' + (i === palSel ? ' sel' : ''));
-      b.appendChild(el('span', 'pi', it.icon));
+      if (it.app) {
+        b.appendChild(tileEl(it.app));
+      } else {
+        var pi = el('span', 'pi-plain');
+        pi.innerHTML = ICONS[it.plain];
+        b.appendChild(pi);
+      }
       b.appendChild(el('span', null, it.label));
       b.appendChild(el('span', 'pk', it.hint));
       b.addEventListener('click', function () { palClose(); it.act(); });
@@ -870,6 +1169,7 @@ export const CLIENT_JS = `
     } else if (ev.key === 'Escape') {
       if (palette.classList.contains('show')) palClose();
       datepop.classList.remove('show');
+      hideCtx();
     }
   });
 

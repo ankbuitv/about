@@ -58,13 +58,25 @@ export function renderPage(origin: string): string {
 
 <div id="spotlight" aria-hidden="true"></div>
 
-<nav id="dock" aria-label="Taskbar">
-  <span class="dock-sep"></span>
-  <div id="tray">
+<header id="menubar">
+  <div class="mb-left">
+    <span class="mb-logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.2 19.6 12 12 20.8 4.4 12Z"/></svg></span>
+    <span class="mb-name">ANKBUI OS</span>
+    <span id="mb-app">Desktop</span>
+  </div>
+  <div class="mb-right">
     <span id="sysdot" title="System online"></span>
+    <span class="mb-wifi" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.8 9.5a14.5 14.5 0 0 1 18.4 0M5.8 12.8a10 10 0 0 1 12.4 0M8.8 16.1a5.2 5.2 0 0 1 6.4 0"/><circle cx="12" cy="19.2" r="1.2" fill="currentColor" stroke="none"/></svg></span>
     <button id="clock" aria-label="Clock">--:--</button>
   </div>
+</header>
+
+<nav id="dock" aria-label="Dock">
+  <span class="dock-sep"></span>
 </nav>
+
+<div id="snapghost" aria-hidden="true"></div>
+<div id="ctx" role="menu" aria-label="Desktop menu"></div>
 
 <div id="datepop" role="tooltip">
   <div class="big"></div>

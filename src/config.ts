@@ -23,7 +23,7 @@ export const CONFIG = {
       description: "Personal network panel — a self-hosted web tool.",
       site: "https://p.ankb.qzz.io",
       repo: "https://github.com/ankbuitv/anp",
-      logo: "https://www.google.com/s2/favicons?domain=p.ankb.qzz.io&sz=128",
+      logo: "https://p.ankb.qzz.io/favicon.ico",
     },
     {
       name: "CHRTV",
@@ -37,7 +37,7 @@ export const CONFIG = {
       description: "In-browser C++ development environment.",
       site: "https://ide.ankb.qzz.io",
       repo: "https://github.com/ankbuitv/ide",
-      logo: "https://www.google.com/s2/favicons?domain=ide.ankb.qzz.io&sz=128",
+      logo: "https://ide.ankb.qzz.io/favicon.ico",
     },
   ] as Project[],
 };
