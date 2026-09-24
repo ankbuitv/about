@@ -1,0 +1,53 @@
+{
+  "availability": "available",
+  "now": "Personal tools on Cloudflare Workers — ANP, CHRTV, and ide.ankb.",
+  "notes": [
+    {
+      "slug": "anp",
+      "title": "ANP",
+      "date": "2026-08-13",
+      "published": true,
+      "body": "# ANP\n\nHệ thống lưu trữ, quản lý, sao lưu và chia sẻ ảnh / video cá nhân.\n\n- Giao diện tiếng Việt\n- Web + REST API trên Cloudflare Workers\n- Metadata ở D1, file gốc và preview ở Backblaze B2 private\n- Production: [p.ankb.qzz.io](https://p.ankb.qzz.io)\n\nPhase hiện tại là web client và API. Media không nằm trong Git."
+    },
+    {
+      "slug": "chrtv",
+      "title": "CHRTV",
+      "date": "2026-08-25",
+      "published": true,
+      "body": "# CHRTV\n\nCloud IPTV gateway. Playlist M3U trong repo là nguồn, Worker đồng bộ vào D1, phát playlist có token và proxy HLS.\n\n- Một URL `/tv.m3u` dán vào VLC, TiviMate hoặc OTT Navigator\n- Player web tại `/xem`\n- Production: [cdn.ankb.qzz.io](https://cdn.ankb.qzz.io)\n\nRepo: [ankbuitv/chrtv](https://github.com/ankbuitv/chrtv)"
+    },
+    {
+      "slug": "ide-ankb",
+      "title": "ide.ankb",
+      "date": "2026-09-05",
+      "published": true,
+      "body": "# ide.ankb\n\nIDE C++ trên web, giao diện tối kiểu VS Code.\n\n- Monaco editor\n- Chạy code qua Judge0, fallback API riêng\n- Desktop (Tauri) và web dùng chung một UI\n- Production: [ide.ankb.qzz.io](https://ide.ankb.qzz.io)\n\nRepo: [ankbuitv/ide](https://github.com/ankbuitv/ide)"
+    }
+  ],
+  "guestbook": [],
+  "messages": [],
+  "links": [
+    {
+      "slug": "github",
+      "url": "https://github.com/ankbuitv",
+      "animate": true,
+      "label": "GitHub",
+      "createdAt": "2026-09-24T00:00:00.000Z"
+    },
+    {
+      "slug": "anp",
+      "url": "https://p.ankb.qzz.io",
+      "animate": false,
+      "label": "ANP",
+      "createdAt": "2026-09-24T00:00:00.000Z"
+    },
+    {
+      "slug": "ide",
+      "url": "https://ide.ankb.qzz.io",
+      "animate": true,
+      "label": "ide.ankb",
+      "createdAt": "2026-09-24T00:00:00.000Z"
+    }
+  ],
+  "updatedAt": "2026-09-23T00:00:00.000Z"
+}
